@@ -1,0 +1,43 @@
+version: "3.7"
+
+services:
+    triplestore:
+        build: triplestore
+        ports:
+            - "127.0.0.1:7200:7200"
+        volumes:
+            - 'graphdbdata:/opt/graphdb/data'
+            - 'graphdbwork:/opt/graphdb/work'
+            - 'graphdblogs/opt/graphdb/logs'
+    sql:
+        image: mariadb
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=db
+        volumes:
+            - 'mariadbdata:/var/lib/mysql'
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        environment:
+            - "PMA_HOST=sql"
+            - "HIDE_PHP_VERSION=true"
+        # phpmyadmin running on localhost:8080 so that we can easily access the system graphically. 
+        # By default no admin account is created, so initial shell access to make one is needed. 
+        ports:
+            - 127.0.0.1:8081:80
+        depends_on:
+            - sql
+    barrel:
+        build: barrel
+        volumes:
+            - 'composerwww:/var/www/.composer'
+            - './data/:/var/www/data'
+        ports:
+            - 127.0.0.1:8080:8080
+
+volumes:
+    graphdbdata:
+    graphdbwork:
+    graphdblogs:
+    mariadbdata:
+    composerwww:
